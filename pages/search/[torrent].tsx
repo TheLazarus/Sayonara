@@ -1,16 +1,24 @@
-import { NextPage } from "next";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import styles from "./Home.module.css";
+import { GetServerSideProps, NextPage } from "next";
+import { ISearchPageProps } from "./types";
 
-const Home: NextPage = () => {
-  const router = useRouter();
-
+const Home: NextPage<ISearchPageProps> = ({ torrent }) => {
   return (
     <main>
-      <h1>Hello {router.query.torrent}</h1>
+      <h1>Hello {torrent}</h1>
     </main>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { torrent } = context.query;
+
+  const results = await fetch(`http://localhost:3000/api/torrent/${torrent}`);
+
+  return {
+    props: {
+      torrent,
+    },
+  };
 };
 
 export default Home;
