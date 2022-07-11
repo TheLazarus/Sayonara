@@ -1,0 +1,6 @@
+#searchIcon {
+  transition: all ease 1s;
+}
+#searchIcon:hover {
+  cursor: pointer;
+}
