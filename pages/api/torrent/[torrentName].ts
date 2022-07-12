@@ -2,11 +2,13 @@ import { NextApiRequest, NextApiResponse } from "next";
 import hosts from "../../../config/hosts";
 import {
   IFetchTorrentInfoFromAllHosts,
+  IScrapeMagnetsFromHTML,
   ITorrentInfoResponsesFromAllHosts,
 } from "../../../config/typings";
 
 const axios = require("axios");
 const puppeteer = require("puppeteer");
+const cheerio = require("cheerio");
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,9 +18,23 @@ export default async function handler(
     const { torrentName } = req.query;
 
     const pageHTMLFromAllHosts = await fetchTorrentInfoFromAllHosts(hosts);
+    scrapeMagnetsFromHTML(pageHTMLFromAllHosts);
+
     res.status(200).send(pageHTMLFromAllHosts[0].html);
   }
 }
+
+const scrapeMagnetsFromHTML: IScrapeMagnetsFromHTML = (
+  pageHTMLfromAllHosts
+) => {
+  let torrentMagnets = pageHTMLfromAllHosts.map((pageHTML) => {
+    const $ = cheerio.load(pageHTML.html);
+    console.log($.html());
+    // $("tr[class=even]", "tr[class=odd]").each((index: number, element: any) => {
+    //   console.log(element);
+    // });
+  });
+};
 
 const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
   torrentHosts

@@ -13,3 +13,7 @@ export type ITorrentHosts = Array<ITorrentHost>;
 export type IFetchTorrentInfoFromAllHosts = (
   torrentHostEndpoints: ITorrentHosts
 ) => Promise<Array<ITorrentInfoResponse>>;
+
+export type IScrapeMagnetsFromHTML = (
+  pageHTMLFromAllHosts: ITorrentInfoResponsesFromAllHosts
+) => void;
