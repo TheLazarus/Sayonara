@@ -1,4 +1,4 @@
-export type IEndpoint = {
+export type ITorrentHost = {
   source: string;
   url: string;
 };
@@ -6,8 +6,10 @@ export type ITorrentInfoResponse = {
   source: string;
   html: string;
 };
-export type IEndpoints = Array<IEndpoint>;
+export type ITorrentInfoResponsesFromAllHosts = Array<ITorrentInfoResponse>;
 
-export type IFetchInformationAboutTorrent = (
-  torrentHostEndpoints: IEndpoints
+export type ITorrentHosts = Array<ITorrentHost>;
+
+export type IFetchTorrentInfoFromAllHosts = (
+  torrentHostEndpoints: ITorrentHosts
 ) => Promise<Array<ITorrentInfoResponse>>;

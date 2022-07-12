@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import endpoints from "../../../config/endpoints";
-import { IFetchInformationAboutTorrent } from "../../../config/typings";
+import hosts from "../../../config/hosts";
+import {
+  IFetchTorrentInfoFromAllHosts,
+  ITorrentInfoResponsesFromAllHosts,
+} from "../../../config/typings";
 
 const axios = require("axios");
 const puppeteer = require("puppeteer");
@@ -12,19 +15,21 @@ export default async function handler(
   if (req.method === "GET") {
     const { torrentName } = req.query;
 
-    const pageHTML = await fetchInformationAboutTorrent(endpoints);
-    res.status(200).send(pageHTML[0].html);
+    const pageHTMLFromAllHosts = await fetchTorrentInfoFromAllHosts(hosts);
+    res.status(200).send(pageHTMLFromAllHosts[0].html);
   }
 }
 
-const fetchInformationAboutTorrent: IFetchInformationAboutTorrent = async (
-  torrentHostEndpoints
+const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
+  torrentHosts
 ) => {
-  const torrentInfo = [];
-  for (let torrentHostEndpoint of torrentHostEndpoints) {
+  const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
+
+  for (let torrentHost of torrentHosts) {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.goto(`${torrentHostEndpoint.url}?q=assassins+creed+2`);
+
+    await page.goto(`${torrentHost.url}?q=assassins+creed+2`); //Query the Torrent Host
 
     const pageHTML = (await page.evaluate(
       "new XMLSerializer().serializeToString(document.doctype) + document.documentElement.outerHTML"
@@ -33,7 +38,7 @@ const fetchInformationAboutTorrent: IFetchInformationAboutTorrent = async (
     await browser.close();
 
     torrentInfo.push({
-      source: torrentHostEndpoint.source,
+      source: torrentHost.source,
       html: pageHTML,
     });
   }
