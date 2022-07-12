@@ -2,9 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import hosts from "../../../config/hosts";
 import {
   IFetchTorrentInfoFromAllHosts,
-  IScrapeMagnetsFromHTML,
+  IScrapeTorrentsFromHTML,
   ITableRows,
+  ITorrent,
   ITorrentInfoResponsesFromAllHosts,
+  ITorrentInformation,
 } from "../../../config/typings";
 
 const axios = require("axios");
@@ -19,24 +21,69 @@ export default async function handler(
     const { torrentName } = req.query;
 
     const pageHTMLFromAllHosts = await fetchTorrentInfoFromAllHosts(hosts);
-    scrapeMagnetsFromHTML(pageHTMLFromAllHosts);
+    const torrents = scrapeTorrentsFromHTML(pageHTMLFromAllHosts);
 
-    res.status(200).send(pageHTMLFromAllHosts[0].html);
+    res.status(200).json(torrents);
   }
 }
 
-const scrapeMagnetsFromHTML: IScrapeMagnetsFromHTML = (
+const scrapeTorrentsFromHTML: IScrapeTorrentsFromHTML = (
   pageHTMLfromAllHosts
 ) => {
-  let torrentMagnets = pageHTMLfromAllHosts.map((pageHTML) => {
-    const $ = cheerio.load(pageHTML.html);
+  let torrents = pageHTMLfromAllHosts.map((page) => {
+    let torrentInformation: ITorrentInformation = [];
+    const $ = cheerio.load(page.html);
     let tableRows: ITableRows = [];
-    $("#torrents > tbody > tr").each((index: string, element: any) => {
+    $("#torrents > tbody > tr").each((index: number, element: HTMLElement) => {
       tableRows.push($(element).html());
     });
     tableRows = tableRows.slice(1);
-    console.log(tableRows);
+    for (let row of tableRows) {
+      let torrent = {} as ITorrent;
+      const $ = cheerio.load(row, null, false);
+      $("td").each((index: number, element: HTMLElement) => {
+        switch (index) {
+          case 0:
+            torrent.magnetLink = cheerio.load(element)("a").attr("href");
+            break;
+          case 1:
+            torrent.category = "";
+            cheerio
+              .load(element)("a")
+              .each((index: number, element: HTMLElement) => {
+                torrent.category = torrent.category.concat(
+                  `${cheerio.load(element).text()} `
+                );
+              });
+            break;
+          case 2:
+            torrent.name = cheerio.load(element)("a").text();
+            break;
+          case 3:
+            torrent.uploadDate = cheerio.load(element).text();
+            break;
+          case 4:
+            torrent.size = cheerio.load(element).text();
+            break;
+          case 5:
+            torrent.seeders = cheerio.load(element).text();
+            break;
+          case 6:
+            torrent.leechers = cheerio.load(element).text();
+            break;
+          case 7:
+            torrent.uploader = cheerio.load(element).text();
+            break;
+        }
+      });
+      torrentInformation.push(torrent);
+    }
+    return {
+      source: page.source,
+      torrents: torrentInformation,
+    };
   });
+  return torrents;
 };
 
 const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
@@ -45,9 +92,7 @@ const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
   const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
 
   for (let torrentHost of torrentHosts) {
-    const browser = await puppeteer.launch(
-      "C:Program FilesGoogleChromeApplicationchrome.exe"
-    );
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     await page.goto(`${torrentHost.url}?q=assassins+creed+2`); //Query the Torrent Host
@@ -56,6 +101,7 @@ const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
       "new XMLSerializer().serializeToString(document.doctype) + document.documentElement.outerHTML"
     )) as string;
 
+    await page.close();
     await browser.close();
 
     torrentInfo.push({

@@ -17,6 +17,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       torrent,
+      results: JSON.parse(JSON.stringify(results)),
     },
   };
 };
