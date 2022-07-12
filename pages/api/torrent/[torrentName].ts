@@ -3,6 +3,7 @@ import hosts from "../../../config/hosts";
 import {
   IFetchTorrentInfoFromAllHosts,
   IScrapeMagnetsFromHTML,
+  ITableRows,
   ITorrentInfoResponsesFromAllHosts,
 } from "../../../config/typings";
 
@@ -29,10 +30,12 @@ const scrapeMagnetsFromHTML: IScrapeMagnetsFromHTML = (
 ) => {
   let torrentMagnets = pageHTMLfromAllHosts.map((pageHTML) => {
     const $ = cheerio.load(pageHTML.html);
-    console.log($.html());
-    // $("tr[class=even]", "tr[class=odd]").each((index: number, element: any) => {
-    //   console.log(element);
-    // });
+    let tableRows: ITableRows = [];
+    $("#torrents > tbody > tr").each((index: string, element: any) => {
+      tableRows.push($(element).html());
+    });
+    tableRows = tableRows.slice(1);
+    console.log(tableRows);
   });
 };
 
@@ -42,7 +45,9 @@ const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
   const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
 
   for (let torrentHost of torrentHosts) {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch(
+      "C:Program FilesGoogleChromeApplicationchrome.exe"
+    );
     const page = await browser.newPage();
 
     await page.goto(`${torrentHost.url}?q=assassins+creed+2`); //Query the Torrent Host

@@ -17,3 +17,5 @@ export type IFetchTorrentInfoFromAllHosts = (
 export type IScrapeMagnetsFromHTML = (
   pageHTMLFromAllHosts: ITorrentInfoResponsesFromAllHosts
 ) => void;
+
+export type ITableRows = Array<string>;
