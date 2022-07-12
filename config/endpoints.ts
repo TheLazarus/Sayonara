@@ -1,14 +1,9 @@
-type IEndpoint = {
-  id: string;
-  url: string;
-};
-
-type IEndpoints = Array<IEndpoint>;
+import { IEndpoints } from "./typings";
 
 const endpoints: IEndpoints = [
   {
     id: "piratesbay",
-    url: "proxifiedpiratebay.org/search.php",
+    url: "https://ww3.limetorrents.cyou/search.php",
   },
 ];
 
