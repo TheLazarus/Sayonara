@@ -1,10 +1,13 @@
 export type IEndpoint = {
-  id: string;
+  source: string;
   url: string;
 };
-
+export type ITorrentInfoResponse = {
+  source: string;
+  html: string;
+};
 export type IEndpoints = Array<IEndpoint>;
 
 export type IFetchInformationAboutTorrent = (
   torrentHostEndpoints: IEndpoints
-) => void;
+) => Promise<Array<ITorrentInfoResponse>>;
