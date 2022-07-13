@@ -2,7 +2,7 @@ export type ITorrentHost = {
   source: string;
   url: string;
 };
-export type ITorrentInfoResponse = {
+export type ITorrentHostInfo = {
   source: string;
   html: string;
 };
@@ -18,23 +18,21 @@ export type ITorrent = {
   uploader: string;
 };
 
-export type ITorrentsFromSource = {
+export type ITorrentsFromHost = {
   source: string;
   torrents: ITorrentInformation;
 };
 
+export type ISourceWithRow = {
+  source: string;
+  tableRows: ITableRows;
+};
 export type ITorrentInformation = Array<ITorrent>;
 
-export type ITorrentInfoResponsesFromAllHosts = Array<ITorrentInfoResponse>;
+export type ITorrentInfoResponsesFromAllHosts = Array<ITorrentHostInfo>;
 
 export type ITorrentHosts = Array<ITorrentHost>;
 
 export type ITableRows = Array<string>;
 
-export type IFetchTorrentInfoFromAllHosts = (
-  torrentHostEndpoints: ITorrentHosts
-) => Promise<Array<ITorrentInfoResponse>>;
-
-export type IScrapeTorrentsFromHTML = (
-  pageHTMLFromAllHosts: ITorrentInfoResponsesFromAllHosts
-) => Array<ITorrentsFromSource>;
+export type ISourceWithRows = Array<ISourceWithRow>;

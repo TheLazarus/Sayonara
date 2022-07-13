@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import hosts from "../../../config/hosts";
 import {
-  IFetchTorrentInfoFromAllHosts,
-  IScrapeTorrentsFromHTML,
   ITableRows,
   ITorrent,
   ITorrentInfoResponsesFromAllHosts,
-  ITorrentInformation,
+  ISourceWithRows,
+  ITorrentHost,
+  ITorrentHostInfo,
 } from "../../../config/typings";
 
 const axios = require("axios");
@@ -20,27 +20,37 @@ export default async function handler(
   if (req.method === "GET") {
     const { torrentName } = req.query;
 
-    const pageHTMLFromAllHosts = await fetchTorrentInfoFromAllHosts(hosts);
-    const torrents = scrapeTorrentsFromHTML(pageHTMLFromAllHosts);
-
-    res.status(200).json(torrents);
+    const hTMLFromAllHosts = await getHTMLFromAllHosts(hosts);
+    const torrentRows = scrapeTorrentRowsFromHTML(hTMLFromAllHosts);
+    const torrents = getTorrentsFromRows(torrentRows);
+    res.status(200).send(torrents);
   }
 }
 
-const scrapeTorrentsFromHTML: IScrapeTorrentsFromHTML = (
-  pageHTMLfromAllHosts
+const scrapeTorrentRowsFromHTML = (
+  hTMLfromAllHosts: Array<ITorrentHostInfo>
 ) => {
-  let torrents = pageHTMLfromAllHosts.map((page) => {
-    let torrentInformation: ITorrentInformation = [];
+  let torrentRows = hTMLfromAllHosts.map((page) => {
     const $ = cheerio.load(page.html);
     let tableRows: ITableRows = [];
     $("#torrents > tbody > tr").each((index: number, element: HTMLElement) => {
       tableRows.push($(element).html());
     });
     tableRows = tableRows.slice(1);
-    for (let row of tableRows) {
+    return {
+      source: page.source,
+      tableRows,
+    };
+  });
+  return torrentRows;
+};
+
+const getTorrentsFromRows = (torrentRows: ISourceWithRows) => {
+  let torrentInformation = [];
+  for (let row of torrentRows) {
+    for (let trow of row.tableRows) {
       let torrent = {} as ITorrent;
-      const $ = cheerio.load(row, null, false);
+      const $ = cheerio.load(trow, null, false);
       $("td").each((index: number, element: HTMLElement) => {
         switch (index) {
           case 0:
@@ -78,17 +88,11 @@ const scrapeTorrentsFromHTML: IScrapeTorrentsFromHTML = (
       });
       torrentInformation.push(torrent);
     }
-    return {
-      source: page.source,
-      torrents: torrentInformation,
-    };
-  });
-  return torrents;
+  }
+  return torrentInformation;
 };
 
-const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
-  torrentHosts
-) => {
+const getHTMLFromAllHosts = async (torrentHosts: Array<ITorrentHost>) => {
   const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
 
   for (let torrentHost of torrentHosts) {
@@ -101,7 +105,6 @@ const fetchTorrentInfoFromAllHosts: IFetchTorrentInfoFromAllHosts = async (
       "new XMLSerializer().serializeToString(document.doctype) + document.documentElement.outerHTML"
     )) as string;
 
-    await page.close();
     await browser.close();
 
     torrentInfo.push({
