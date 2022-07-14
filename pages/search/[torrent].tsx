@@ -2,11 +2,12 @@ import { GetServerSideProps, NextPage } from "next";
 import { ISearchPageProps } from "./types";
 import React from "react";
 import { ITorrentInformation } from "../../config/typings";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import TorrentTable from "../../components/TorrentTable";
 
 const Home: NextPage<ISearchPageProps> = ({ torrent }) => {
-  const [torrents, setTorrents] = React.useState<Array<ITorrentInformation>>(
-    []
-  );
+  const [torrents, setTorrents] = React.useState<ITorrentInformation>([]);
 
   const fetchTorrents = async () => {
     const response = await fetch(
@@ -21,7 +22,16 @@ const Home: NextPage<ISearchPageProps> = ({ torrent }) => {
     fetchTorrents();
   }, []);
 
-  return <main>{JSON.stringify(torrents)}</main>;
+  return torrents.length ? (
+    <TorrentTable torrents={torrents} />
+  ) : (
+    <Backdrop
+      sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      open={Boolean(!torrents.length)}
+    >
+      <CircularProgress color="inherit" />
+    </Backdrop>
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
