@@ -1,4 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
+const puppeteer = require("puppeteer");
+const cheerio = require("cheerio");
 import hosts from "../../../config/hosts";
 import {
   ITableRows,
@@ -9,10 +11,6 @@ import {
   ITorrentHostInfo,
 } from "../../../config/typings";
 
-const axios = require("axios");
-const puppeteer = require("puppeteer");
-const cheerio = require("cheerio");
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -20,12 +18,39 @@ export default async function handler(
   if (req.method === "GET") {
     const { torrentName } = req.query;
 
-    const hTMLFromAllHosts = await getHTMLFromAllHosts(hosts);
+    const hTMLFromAllHosts = await getHTMLFromAllHosts(
+      hosts,
+      torrentName as string
+    );
     const torrentRows = scrapeTorrentRowsFromHTML(hTMLFromAllHosts);
     const torrents = getTorrentsFromRows(torrentRows);
     res.status(200).send(torrents);
   }
 }
+
+const getHTMLFromAllHosts = async (
+  torrentHosts: Array<ITorrentHost>,
+  torrentName: string
+) => {
+  const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
+
+  for (let torrentHost of torrentHosts) {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.goto(`${torrentHost.url}?q=${torrentName}`); //Query the Torrent Host
+
+    const pageHTML = (await page.evaluate(
+      "new XMLSerializer().serializeToString(document.doctype) + document.documentElement.outerHTML"
+    )) as string;
+
+    torrentInfo.push({
+      source: torrentHost.source,
+      html: pageHTML,
+    });
+  }
+  return torrentInfo;
+};
 
 const scrapeTorrentRowsFromHTML = (
   hTMLfromAllHosts: Array<ITorrentHostInfo>
@@ -90,27 +115,4 @@ const getTorrentsFromRows = (torrentRows: ISourceWithRows) => {
     }
   }
   return torrentInformation;
-};
-
-const getHTMLFromAllHosts = async (torrentHosts: Array<ITorrentHost>) => {
-  const torrentInfo: ITorrentInfoResponsesFromAllHosts = [];
-
-  for (let torrentHost of torrentHosts) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
-    await page.goto(`${torrentHost.url}?q=assassins+creed+2`); //Query the Torrent Host
-
-    const pageHTML = (await page.evaluate(
-      "new XMLSerializer().serializeToString(document.doctype) + document.documentElement.outerHTML"
-    )) as string;
-
-    await browser.close();
-
-    torrentInfo.push({
-      source: torrentHost.source,
-      html: pageHTML,
-    });
-  }
-  return torrentInfo;
 };

@@ -9,7 +9,6 @@ body {
   display: flex;
   padding-top: 2.5em;
   justify-content: center;
-  overflow: hidden;
 }
 svg {
   position: absolute;

@@ -1,3 +1,3 @@
-export type ISearchPageProps = {
+export type ISearchResultsProps = {
   torrent: string;
 };
