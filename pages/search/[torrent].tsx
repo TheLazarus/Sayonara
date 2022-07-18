@@ -6,12 +6,14 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import TorrentTable from "../../components/TorrentTable";
 
-const Home: NextPage<ISearchResultsProps> = ({ torrent }) => {
+const Home: NextPage<ISearchResultsProps> = ({ torrent, category }) => {
   const [torrents, setTorrents] = React.useState<ITorrentInformation>([]);
 
   const fetchTorrents = async () => {
     const response = await fetch(
-      `http://localhost:3000/api/torrent/${torrent}`
+      `http://localhost:3000/api/torrent/${encodeURIComponent(
+        torrent
+      )}?category=${encodeURIComponent(category)}`
     );
     const torrentData = await response.json();
     console.log(torrentData);
@@ -36,10 +38,11 @@ const Home: NextPage<ISearchResultsProps> = ({ torrent }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { torrent } = context.query;
+  const { torrent, category } = context.query;
   return {
     props: {
       torrent,
+      category,
     },
   };
 };

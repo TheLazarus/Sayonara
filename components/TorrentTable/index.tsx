@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { ITorrentInformation } from "../../config/typings";
 import Container from "@mui/material/Container";
 import Table from "@mui/material/Table";
@@ -51,7 +52,9 @@ const TorrentTable: React.FunctionComponent<ITorrentTableProps> = ({
                 <TableCell align="center">{torrent.leechers}</TableCell>
                 <TableCell align="center">{torrent.uploadDate}</TableCell>
                 <TableCell align="center">{torrent.uploader}</TableCell>
-                <TableCell align="center">magnet</TableCell>
+                <TableCell align="center">
+                  <a href={torrent.magnetLink}>Magnet</a>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -25,14 +25,12 @@ export type ITorrentsFromHost = {
 
 export type ISourceWithRow = {
   source: string;
-  tableRows: ITableRows;
+  tableRows: Array<string>;
 };
 export type ITorrentInformation = Array<ITorrent>;
 
 export type ITorrentInfoResponsesFromAllHosts = Array<ITorrentHostInfo>;
 
 export type ITorrentHosts = Array<ITorrentHost>;
-
-export type ITableRows = Array<string>;
 
 export type ISourceWithRows = Array<ISourceWithRow>;
