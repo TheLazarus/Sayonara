@@ -15,12 +15,14 @@ const TorrentTable: React.FunctionComponent<ITorrentTableProps> = ({
       sx={{
         height: "100vh",
         width: "100vw",
-        padding: "1em",
+        padding: "2em",
         display: "flex",
         flexDirection: "column",
         gap: "1em",
+        fontFamily: "Roboto Mono",
       }}
     >
+      <h1>SEARCH RESULTS</h1>
       {torrents.map((torrent) => (
         <Torrent torrent={torrent} key={torrent.magnetLink} />
       ))}
