@@ -1,6 +1,16 @@
 #searchIcon {
   transition: all ease 1s;
+  position: relative;
+  bottom: 0.6em;
 }
+#searchIconWrapper {
+  position: relative;
+  bottom: 0.6em;
+}
+
 #searchIcon:hover {
   cursor: pointer;
+}
+.flex {
+  display: flex;
 }
